@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="description" content="Gestión de tareas de mantenimiento para hotel">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mantenimiento">
+    <title>Mantenimiento Hotel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { overscroll-behavior: none; margin: 0; padding: 0; }
+        input, textarea, button { font-size: 16px !important; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const Icon = ({ name, className = "w-5 h-5" }) => {
+            const icons = {
+                plus: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>,
+                search: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
+                circle: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /></svg>,
+                clock: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2" /></svg>,
+                check: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+                alert: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
+                wrench: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+                zap: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+                droplet: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" /></svg>,
+                wind: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.121 9.88A2.988 2.988 0 0012 9c-1.657 0-3 1.343-3 3s1.343 3 3 3a2.988 2.988 0 002.121-.88M12 15v6M9 12H3m18 0h-6M9 21H3m18 0h-6M9 3H3m18 0h-6" /></svg>,
+                bed: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18M3 12v6a2 2 0 002 2h14a2 2 0 002-2v-6M3 12V9a2 2 0 012-2h14a2 2 0 012 2v3M8 12V8m8 4V8" /></svg>,
+                trash: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
+                edit: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
+                x: <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            };
+            return icons[name] || null;
+        };
+
+        const categories = [
+            { id: 'plomeria', name: 'Plomería', icon: 'droplet', color: 'bg-blue-500' },
+            { id: 'electricidad', name: 'Electricidad', icon: 'zap', color: 'bg-yellow-500' },
+            { id: 'limpieza', name: 'Limpieza', icon: 'wind', color: 'bg-green-500' },
+            { id: 'mobiliario', name: 'Mobiliario', icon: 'bed', color: 'bg-purple-500' },
+            { id: 'general', name: 'General', icon: 'wrench', color: 'bg-gray-500' }
+        ];
+        const priorities = [
+            { id: 'urgente', name: 'Urgente', color: 'bg-red-500' },
+            { id: 'alta', name: 'Alta', color: 'bg-orange-500' },
+            { id: 'normal', name: 'Normal', color: 'bg-blue-500' },
+            { id: 'baja', name: 'Baja', color: 'bg-gray-500' }
+        ];
+        const statuses = [
+            { id: 'pendiente', name: 'Pendiente', icon: 'circle' },
+            { id: 'en-progreso', name: 'En Progreso', icon: 'clock' },
+            { id: 'completada', name: 'Completada', icon: 'check' }
+        ];
+        const locations = {
+            planta1: Array.from({ length: 11 }, (_, i) => `Hab. ${101 + i}`),
+            planta2: Array.from({ length: 11 }, (_, i) => `Hab. ${201 + i}`),
+            planta3: Array.from({ length: 11 }, (_, i) => `Hab. ${301 + i}`),
+            comunes: ['Recepción', 'Lobby', 'Restaurante', 'Cocina', 'Piscina', 'Gimnasio', 'Spa', 'Lavandería', 'Parking', 'Jardín', 'Terraza']
+        };
+        window.storage = {
+            get: (k) => Promise.resolve(localStorage.getItem(k) ? { key: k, value: localStorage.getItem(k) } : null),
+            set: (k, v) => { localStorage.setItem(k, v); return Promise.resolve({ key: k, value: v }); }
+        };
+
+        function App() {
+            const [tasks, setTasks] = useState([]);
+            const [showModal, setShowModal] = useState(false);
+            const [editingTask, setEditingTask] = useState(null);
+            const [filterStatus, setFilterStatus] = useState('all');
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedFloor, setSelectedFloor] = useState('planta1');
+            const [formData, setFormData] = useState({ title: '', description: '', location: '', category: 'general', priority: 'normal', status: 'pendiente' });
+
+            useEffect(() => {
+                window.storage.get('hotel-tasks').then(r => r && setTasks(JSON.parse(r.value)));
+            }, []);
+
+            const saveTasks = (t) => { window.storage.set('hotel-tasks', JSON.stringify(t)); setTasks(t); };
+            const handleSubmit = () => {
+                if (!formData.title.trim() || !formData.location.trim()) return alert('Completa título y ubicación');
+                const task = { id: editingTask?.id || Date.now().toString(), ...formData, createdAt: editingTask?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
+                saveTasks(editingTask ? tasks.map(t => t.id === editingTask.id ? task : t) : [task, ...tasks]);
+                resetForm();
+            };
+            const resetForm = () => { setFormData({ title: '', description: '', location: '', category: 'general', priority: 'normal', status: 'pendiente' }); setSelectedFloor('planta1'); setEditingTask(null); setShowModal(false); };
+            const deleteTask = (id) => confirm('¿Eliminar?') && saveTasks(tasks.filter(t => t.id !== id));
+            const editTask = (t) => { setEditingTask(t); setFormData(t); setShowModal(true); };
+            const updateStatus = (id, s) => saveTasks(tasks.map(t => t.id === id ? { ...t, status: s, updatedAt: new Date().toISOString() } : t));
+            const filtered = tasks.filter(t => (filterStatus === 'all' || t.status === filterStatus) && [t.title, t.location, t.description].some(f => f.toLowerCase().includes(searchTerm.toLowerCase())));
+            const stats = { pendiente: tasks.filter(t => t.status === 'pendiente').length, enProgreso: tasks.filter(t => t.status === 'en-progreso').length, completada: tasks.filter(t => t.status === 'completada').length };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pb-20">
+                    <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700">
+                        <div className="p-4">
+                            <h1 className="text-2xl font-bold mb-4">🏨 Mantenimiento Hotel</h1>
+                            <div className="grid grid-cols-3 gap-2 mb-4">
+                                <div className="bg-orange-500/20 border border-orange-500/30 rounded-lg p-3 text-center">
+                                    <div className="text-2xl font-bold text-orange-400">{stats.pendiente}</div>
+                                    <div className="text-xs text-orange-300">Pendientes</div>
+                                </div>
+                                <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-3 text-center">
+                                    <div className="text-2xl font-bold text-blue-400">{stats.enProgreso}</div>
+                                    <div className="text-xs text-blue-300">En Progreso</div>
+                                </div>
+                                <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-center">
+                                    <div className="text-2xl font-bold text-green-400">{stats.completada}</div>
+                                    <div className="text-xs text-green-300">Completadas</div>
+                                </div>
+                            </div>
+                            <div className="relative mb-3">
+                                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"><Icon name="search" /></div>
+                                <input type="text" placeholder="Buscar tareas..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 text-white" />
+                            </div>
+                            <div className="flex gap-2 overflow-x-auto pb-2">
+                                <button onClick={() => setFilterStatus('all')} className={`px-4 py-2 rounded-lg whitespace-nowrap font-medium ${filterStatus === 'all' ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-300'}`}>Todas</button>
+                                {statuses.map(s => <button key={s.id} onClick={() => setFilterStatus(s.id)} className={`px-4 py-2 rounded-lg whitespace-nowrap font-medium ${filterStatus === s.id ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-300'}`}>{s.name}</button>)}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-4 space-y-3">
+                        {filtered.length === 0 ? <div className="text-center py-12 text-slate-400"><Icon name="alert" className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No hay tareas</p></div> : filtered.map(t => {
+                            const cat = categories.find(c => c.id === t.category);
+                            const pri = priorities.find(p => p.id === t.priority);
+                            return (
+                                <div key={t.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className={`${pri.color} px-2 py-1 rounded text-xs font-bold`}>{pri.name}</span>
+                                        <span className={`${cat.color} px-2 py-1 rounded text-xs font-bold`}>{cat.name}</span>
+                                    </div>
+                                    <h3 className="font-bold text-lg mb-1">{t.title}</h3>
+                                    <p className="text-sm text-slate-400 mb-2">📍 {t.location}</p>
+                                    {t.description && <p className="text-sm text-slate-300 mb-3">{t.description}</p>}
+                                    <div className="flex gap-2 mb-3">
+                                        {statuses.map(s => <button key={s.id} onClick={() => updateStatus(t.id, s.id)} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1 ${t.status === s.id ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-400'}`}><Icon name={s.icon} className="w-4 h-4" /></button>)}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => editTask(t)} className="flex-1 bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-2"><Icon name="edit" className="w-4 h-4" />Editar</button>
+                                        <button onClick={() => deleteTask(t.id)} className="flex-1 bg-red-600 text-white py-2 rounded-lg flex items-center justify-center gap-2"><Icon name="trash" className="w-4 h-4" />Eliminar</button>
+                                    </div>
+                                    <div className="mt-3 text-xs text-slate-500">Creada: {new Date(t.createdAt).toLocaleDateString('es')}</div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <button onClick={() => setShowModal(true)} className="fixed bottom-6 right-6 bg-blue-500 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center"><Icon name="plus" className="w-6 h-6" /></button>
+                    {showModal && (
+                        <div className="fixed inset-0 bg-black/80 z-50 flex items-end">
+                            <div className="bg-slate-800 w-full rounded-t-3xl max-h-[90vh] overflow-y-auto">
+                                <div className="sticky top-0 bg-slate-800 border-b border-slate-700 p-4 flex items-center justify-between">
+                                    <h2 className="text-xl font-bold">{editingTask ? 'Editar' : 'Nueva'} Tarea</h2>
+                                    <button onClick={resetForm}><Icon name="x" className="w-6 h-6" /></button>
+                                </div>
+                                <div className="p-4 space-y-4">
+                                    <div><label className="block text-sm font-medium mb-2">Título *</label><input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white" placeholder="Ej: Reparar grifo" /></div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Ubicación *</label>
+                                        <div className="grid grid-cols-4 gap-2 mb-3">
+                                            {['planta1', 'planta2', 'planta3', 'comunes'].map((f, i) => <button key={f} onClick={() => setSelectedFloor(f)} className={`py-2 rounded-lg text-sm font-medium ${selectedFloor === f ? 'bg-blue-500 text-white' : 'bg-slate-900 border border-slate-700 text-slate-400'}`}>{['Planta 1', 'Planta 2', 'Planta 3', 'Comunes'][i]}</button>)}
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto p-2 bg-slate-900 rounded-lg border border-slate-700">
+                                            {locations[selectedFloor].map(loc => <button key={loc} onClick={() => setFormData({ ...formData, location: loc })} className={`py-3 rounded-lg text-sm font-medium ${formData.location === loc ? 'bg-blue-500 text-white' : 'bg-slate-800 border border-slate-700 text-slate-300'}`}>{loc}</button>)}
+                                        </div>
+                                        <div className="mt-3"><label className="block text-xs text-slate-400 mb-2">O personalizada:</label><input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white" /></div>
+                                    </div>
+                                    <div><label className="block text-sm font-medium mb-2">Descripción</label><textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white h-24 resize-none" /></div>
+                                    <div><label className="block text-sm font-medium mb-2">Categoría</label><div className="grid grid-cols-2 gap-2">{categories.map(c => <button key={c.id} onClick={() => setFormData({ ...formData, category: c.id })} className={`p-3 rounded-lg border-2 flex items-center gap-2 ${formData.category === c.id ? `${c.color} border-white` : 'bg-slate-900 border-slate-700 text-slate-400'}`}><Icon name={c.icon} className="w-5 h-5" /><span className="text-sm font-medium">{c.name}</span></button>)}</div></div>
+                                    <div><label className="block text-sm font-medium mb-2">Prioridad</label><div className="grid grid-cols-2 gap-2">{priorities.map(p => <button key={p.id} onClick={() => setFormData({ ...formData, priority: p.id })} className={`p-3 rounded-lg border-2 font-medium ${formData.priority === p.id ? `${p.color} border-white` : 'bg-slate-900 border-slate-700 text-slate-400'}`}>{p.name}</button>)}</div></div>
+                                    <div><label className="block text-sm font-medium mb-2">Estado</label><div className="grid grid-cols-3 gap-2">{statuses.map(s => <button key={s.id} onClick={() => setFormData({ ...formData, status: s.id })} className={`p-3 rounded-lg border-2 flex flex-col items-center gap-1 ${formData.status === s.id ? 'bg-blue-500 border-white' : 'bg-slate-900 border-slate-700 text-slate-400'}`}><Icon name={s.icon} className="w-5 h-5" /><span className="text-xs font-medium">{s.name}</span></button>)}</div></div>
+                                    <button onClick={handleSubmit} className="w-full bg-blue-500 text-white py-4 rounded-lg font-bold text-lg">{editingTask ? 'Guardar' : 'Crear'}</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        ReactDOM.render(<App />, document.getElementById('root'));
+        if ('serviceWorker' in navigator) {
+            const sw = `self.addEventListener('install',e=>e.waitUntil(caches.open('v1').then(c=>c.addAll(['/']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+            navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw], { type: 'application/javascript' })));
+        }
+    </script>
+</body>
+</html>
